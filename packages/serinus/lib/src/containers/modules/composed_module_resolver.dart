@@ -21,8 +21,10 @@ class ComposedModuleResolver {
   final Future<void> Function(Module, {bool internal, int depth})
   _registerModule;
 
+  final Set<Type> _emptyModules;
+
   /// Creates a new composed module resolver
-  ComposedModuleResolver(this._scopeManager, this._registerModule);
+  ComposedModuleResolver(this._scopeManager, this._registerModule, this._emptyModules);
 
   int _nextDepthFor(InjectionToken parentToken) {
     final parentScope = _scopeManager.getScopeOrNull(parentToken);
@@ -183,13 +185,17 @@ class ComposedModuleResolver {
 
     await _registerModule(
       moduleInstance,
-      internal: true,
+      internal: false,
       depth: _nextDepthFor(parentToken),
     );
 
     final refreshedParentScope = _scopeManager.getScopeOrNull(parentToken);
     if (refreshedParentScope == null) {
       throw InitializationError('Module with token $parentToken not found');
+    }
+
+    if (_emptyModules.contains(moduleInstance.runtimeType)) {
+      return true;
     }
 
     refreshedParentScope.imports.add(moduleInstance);

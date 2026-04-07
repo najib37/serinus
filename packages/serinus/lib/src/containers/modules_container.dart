@@ -40,6 +40,8 @@ final class ModulesContainer {
   /// The application configuration
   final ApplicationConfig config;
 
+  final Set<Type> _emptyModules = {};
+
   /// Creates a new [ModulesContainer] instance
   ModulesContainer(this.config) {
     _composedProviderResolver = ComposedProviderResolver(
@@ -49,6 +51,7 @@ final class ModulesContainer {
     _composedModuleResolver = ComposedModuleResolver(
       _scopeManager,
       registerModules,
+      _emptyModules,
     );
   }
 
@@ -255,6 +258,11 @@ final class ModulesContainer {
 
     final dynamicEntry = await entrypoint.registerAsync(config);
     currentScope.extendWithDynamicModule(dynamicEntry);
+
+    if (currentScope.isEmpty) {
+      _emptyModules.add(entrypoint.runtimeType);
+      return;
+    }
 
     // Register controller metadata
     for (final c in currentScope.controllers) {

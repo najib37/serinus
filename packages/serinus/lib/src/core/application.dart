@@ -89,6 +89,57 @@ abstract class Application {
     }
   }
 
+  /// The [useService] method is used to get a provider from the application context.
+  T useService<T>([String? name]) {
+    // If a name is provided, look up the named value directly
+    if (name != null) {
+      final token = ValueToken(T, name);
+      if (_container.modulesContainer.globalValueProviders.containsKey(token)) {
+        return _container.modulesContainer.globalValueProviders[token] as T;
+      }
+      throw StateError(
+        'Named value "$name" of type $T not found in global application context',
+      );
+    }
+    final providers = {
+      for (final provider in _container.modulesContainer.globalProviders)
+        provider.runtimeType: provider,
+    };
+    // Check providers first
+    if (providers.containsKey(T)) {
+      return providers[T] as T;
+    }
+
+    // Check for unnamed value
+    final unnamedToken = ValueToken(T, null);
+    if (_container.modulesContainer.globalValueProviders.containsKey(unnamedToken)) {
+      return _container.modulesContainer.globalValueProviders[unnamedToken] as T;
+    }
+
+    // Check hooks services
+    if (_container.config.globalHooks.services.containsKey(T)) {
+      return _container.config.globalHooks.services[T] as T;
+    }
+
+    throw StateError(
+      'Provider or service of type $T not found in global application context',
+    );
+  }
+
+  /// The [canUseService] method is used to check if a provider exists in the application context.
+  bool canUseService<T>([String? name]) {
+    if (name != null) {
+      return _container.modulesContainer.globalValueProviders.containsKey(ValueToken(T, name));
+    }
+    final providers = {
+      for (final provider in _container.modulesContainer.globalProviders)
+        provider.runtimeType: provider,
+    };
+    return providers.containsKey(T) ||
+        _container.modulesContainer.globalValueProviders.containsKey(ValueToken(T, null)) ||
+        _container.config.globalHooks.services.containsKey(T);
+  }
+
   /// The [url] property contains the URL of the application.
   String get url;
 

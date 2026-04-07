@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.8
+
+- Re-add logs for Composed Modules that were falsely logged as internal modules in the previous release. This fix ensures that composed modules are correctly identified and logged as composed modules, providing better visibility and debugging capabilities for developers working with composed modules in Serinus applications. 
+- Prevent empty modules to be registered.
+- Add `useService` and `canUseService` methods to the Application class to allow for service retrival in the main function. This allows for better integration with the Serinus CLI and other tools that may need to access services from the application context.
+
 ## 2.1.7
 
 **Released on:** 14-03-2026

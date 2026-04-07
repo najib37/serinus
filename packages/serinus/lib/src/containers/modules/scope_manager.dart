@@ -143,6 +143,13 @@ class ModuleScope {
     this.internal = false,
   });
 
+  /// Checks if the module scope is empty (no providers, exports, controllers, or imports)
+  bool get isEmpty =>
+      providers.isEmpty &&
+      exports.isEmpty &&
+      controllers.isEmpty &&
+      imports.isEmpty;
+
   /// Extends the module scope with additional elements
   void extend({
     Iterable<Provider>? providers,

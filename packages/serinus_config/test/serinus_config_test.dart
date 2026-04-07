@@ -18,7 +18,7 @@ class MainController extends Controller {
     });
     on(TestRoute(path: '/null'), (context) async {
       final configService = context.use<ConfigService>();
-      final value = configService.getOrNull(context.query['key'] ?? 'TEST');
+      final value = configService.get(context.query['key'] ?? 'TEST');
       return value ?? 'null';
     });
   }
@@ -26,7 +26,11 @@ class MainController extends Controller {
 
 class MainModule extends Module {
   MainModule()
-      : super(imports: [ConfigModule()], controllers: [MainController()]);
+      : super(imports: [ConfigModule(
+        sources: [
+          EnvFile('.env'),
+        ]
+      )], controllers: [MainController()]);
 }
 
 void main() {

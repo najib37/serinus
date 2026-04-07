@@ -20,7 +20,13 @@ import 'package:serinus_config/serinus_config.dart';
 class AppModule extends Module {
 
     AppModule() : super(
-        imports: [ConfigModule()],
+        imports: [
+            ConfigModule(
+                sources: [
+                    EnvFile('.env'),
+                ]
+            )
+        ],
     );
 
 }
