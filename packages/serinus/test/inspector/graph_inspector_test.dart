@@ -92,14 +92,18 @@ void main() {
             poweredByHeader: 'Powered by Serinus',
           ),
         );
-        final module = TestModule();
+        final module = TestModule(
+          providers: [
+            TestProvider()
+          ]
+        );
         final container = SerinusContainer(config, _MockAdapter());
         final inspector = container.inspector;
         final graph = inspector.graph;
         await container.modulesContainer.registerModules(module);
         inspector.inspectModules();
         expect(graph, isNotNull);
-        expect(graph.nodes.length, 1);
+        expect(graph.nodes.length, 2);
         expect(graph.edges.length, 0);
       },
     );

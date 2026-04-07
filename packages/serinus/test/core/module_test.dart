@@ -37,7 +37,7 @@ void main() async {
 
         await container.finalize(module);
 
-        expect(container.scopes.length, 2);
+        expect(container.scopes.length, 1);
       },
     );
 
@@ -113,7 +113,11 @@ void main() async {
       () async {
         final container = ModulesContainer(config);
 
-        final module = TestModule();
+        final module = TestModule(
+          providers: [
+            Provider.forValue<String>('TestModuleValue'),
+          ]
+        );
         final parents = container.getParents(module);
 
         expect(parents, []);
@@ -125,7 +129,11 @@ void main() async {
         ''',
       () async {
         final container = ModulesContainer(config);
-        final subModule = TestSubModule();
+        final subModule = TestSubModule(
+          providers: [
+            Provider.forValue<String>('TestSubModuleValue'),
+          ]
+        );
         final module = TestModule(imports: [subModule]);
 
         await container.registerModules(module);

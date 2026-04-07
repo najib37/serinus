@@ -259,7 +259,7 @@ final class ModulesContainer {
     final dynamicEntry = await entrypoint.registerAsync(config);
     currentScope.extendWithDynamicModule(dynamicEntry);
 
-    if (currentScope.isEmpty) {
+    if (currentScope.isEmpty && !internal && entrypointToken != token) {
       _emptyModules.add(entrypoint.runtimeType);
       return;
     }
