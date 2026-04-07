@@ -24,7 +24,11 @@ class ComposedModuleResolver {
   final Set<Type> _emptyModules;
 
   /// Creates a new composed module resolver
-  ComposedModuleResolver(this._scopeManager, this._registerModule, this._emptyModules);
+  ComposedModuleResolver(
+    this._scopeManager,
+    this._registerModule,
+    this._emptyModules,
+  );
 
   int _nextDepthFor(InjectionToken parentToken) {
     final parentScope = _scopeManager.getScopeOrNull(parentToken);

@@ -52,7 +52,7 @@ void main() {
         scopeManager.registerScope(scope);
       }
 
-      resolver = ComposedModuleResolver(scopeManager, mockRegisterModule);
+      resolver = ComposedModuleResolver(scopeManager, mockRegisterModule, {});
     });
 
     test('should add and retrieve pending composed modules', () {

@@ -41,5 +41,4 @@ class ConfigService extends Provider {
   Config section(String section) {
     return _config.section(section);
   }
-
 }

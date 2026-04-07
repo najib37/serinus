@@ -4,7 +4,6 @@ import 'package:serinus_config/src/config_service.dart';
 
 /// A module that provides a [ConfigService] that can be used to access environment variables.
 class ConfigModule extends Module {
-
   final List<ConfigSource> sources;
 
   final bool useInterpolation;
@@ -44,9 +43,7 @@ class ConfigModule extends Module {
     for (final source in config.extensions) {
       registry.register(source);
     }
-    providers = [
-      ConfigService(config),
-    ];
+    providers = [ConfigService(config)];
     return DynamicModule(
       providers: providers,
       exports: [if (!isGlobal) ...(providers.map((e) => e.runtimeType))],
@@ -55,7 +52,6 @@ class ConfigModule extends Module {
 }
 
 class ConfigRegistry {
-
   final Map<Type, Object> _registry = {};
 
   void register(Object instance) {
@@ -77,11 +73,9 @@ class ConfigRegistry {
   }
 
   ConfigRegistry._internal();
-
 }
 
 class ConfigFeatureModule extends Module {
-
   final List<Type> dependencies;
 
   ConfigFeatureModule(this.dependencies);
@@ -98,9 +92,6 @@ class ConfigFeatureModule extends Module {
       exports.add(Export(instance.runtimeType));
     }
 
-    return DynamicModule(
-      providers: providers,
-      exports: exports,
-    );
+    return DynamicModule(providers: providers, exports: exports);
   }
 }

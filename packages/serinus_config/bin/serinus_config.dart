@@ -2,7 +2,6 @@ import 'package:serinus/serinus.dart';
 import 'package:serinus_config/serinus_config.dart';
 import 'package:serinus_config/src/conditional_module.dart';
 
-
 class MainController extends Controller {
   MainController() : super('/') {
     on(Route.get('/'), (RequestContext context) async {
@@ -18,27 +17,25 @@ class TestProvider extends Provider {
 }
 
 class TestModule extends Module {
-  TestModule() : super(providers: [
-    TestProvider('Hello, world!')
-  ], exports: [
-    TestProvider
-  ]);
+  TestModule()
+    : super(
+        providers: [TestProvider('Hello, world!')],
+        exports: [TestProvider],
+      );
 }
 
 class MainModule extends Module {
   MainModule()
-    : super(imports: [
-        ConfigModule(
-          sources: [
-            EnvFile('.env'),
-          ],
-          isGlobal: true
-        ),
-        ConditionalModule.registerWhen(module: TestModule(), condition: (env) => env['TEST'] == true)
-      ], controllers: [
-        MainController()
-      ]
-    );
+    : super(
+        imports: [
+          ConfigModule(sources: [EnvFile('.env')], isGlobal: true),
+          ConditionalModule.registerWhen(
+            module: TestModule(),
+            condition: (env) => env['TEST'] == true,
+          ),
+        ],
+        controllers: [MainController()],
+      );
 }
 
 void main() async {

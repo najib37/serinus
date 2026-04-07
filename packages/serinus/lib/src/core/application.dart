@@ -112,8 +112,11 @@ abstract class Application {
 
     // Check for unnamed value
     final unnamedToken = ValueToken(T, null);
-    if (_container.modulesContainer.globalValueProviders.containsKey(unnamedToken)) {
-      return _container.modulesContainer.globalValueProviders[unnamedToken] as T;
+    if (_container.modulesContainer.globalValueProviders.containsKey(
+      unnamedToken,
+    )) {
+      return _container.modulesContainer.globalValueProviders[unnamedToken]
+          as T;
     }
 
     // Check hooks services
@@ -129,14 +132,18 @@ abstract class Application {
   /// The [canUseService] method is used to check if a provider exists in the application context.
   bool canUseService<T>([String? name]) {
     if (name != null) {
-      return _container.modulesContainer.globalValueProviders.containsKey(ValueToken(T, name));
+      return _container.modulesContainer.globalValueProviders.containsKey(
+        ValueToken(T, name),
+      );
     }
     final providers = {
       for (final provider in _container.modulesContainer.globalProviders)
         provider.runtimeType: provider,
     };
     return providers.containsKey(T) ||
-        _container.modulesContainer.globalValueProviders.containsKey(ValueToken(T, null)) ||
+        _container.modulesContainer.globalValueProviders.containsKey(
+          ValueToken(T, null),
+        ) ||
         _container.config.globalHooks.services.containsKey(T);
   }
 

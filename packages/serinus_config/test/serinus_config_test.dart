@@ -26,11 +26,12 @@ class MainController extends Controller {
 
 class MainModule extends Module {
   MainModule()
-      : super(imports: [ConfigModule(
-        sources: [
-          EnvFile('.env'),
-        ]
-      )], controllers: [MainController()]);
+    : super(
+        imports: [
+          ConfigModule(sources: [EnvFile('.env')]),
+        ],
+        controllers: [MainController()],
+      );
 }
 
 void main() {
@@ -38,45 +39,53 @@ void main() {
 
   setUpAll(() async {
     app = await serinus.createApplication(
-        entrypoint: MainModule(), logLevels: {LogLevel.none});
+      entrypoint: MainModule(),
+      logLevels: {LogLevel.none},
+    );
     await app?.serve();
   });
 
   test(
-      'when getting a Enviroment Variable with "getOrThrow" that exists, then the service will return it',
-      () async {
-    final client = HttpClient();
-    var request =
-        await client.getUrl(Uri.parse('http://localhost:3000?key=TEST'));
-    var response = await request.close();
-    expect(response.statusCode, 200);
-    var body = await response.transform(utf8.decoder).join();
-    expect(body, 'Hello World!');
-  });
+    'when getting a Enviroment Variable with "getOrThrow" that exists, then the service will return it',
+    () async {
+      final client = HttpClient();
+      var request = await client.getUrl(
+        Uri.parse('http://localhost:3000?key=TEST'),
+      );
+      var response = await request.close();
+      expect(response.statusCode, 200);
+      var body = await response.transform(utf8.decoder).join();
+      expect(body, 'Hello World!');
+    },
+  );
 
   test(
-      'when getting a Enviroment Variable with "getOrNull" that exists, then the service will return it',
-      () async {
-    final client = HttpClient();
-    var request =
-        await client.getUrl(Uri.parse('http://localhost:3000/null?key=TEST'));
-    var response = await request.close();
-    expect(response.statusCode, 200);
-    var body = await response.transform(utf8.decoder).join();
-    expect(body, 'Hello World!');
-  });
+    'when getting a Enviroment Variable with "getOrNull" that exists, then the service will return it',
+    () async {
+      final client = HttpClient();
+      var request = await client.getUrl(
+        Uri.parse('http://localhost:3000/null?key=TEST'),
+      );
+      var response = await request.close();
+      expect(response.statusCode, 200);
+      var body = await response.transform(utf8.decoder).join();
+      expect(body, 'Hello World!');
+    },
+  );
 
   test(
-      'when getting a Enviroment Variable with "getOrThrow" that not exists, then the service will return null',
-      () async {
-    final client = HttpClient();
-    var request =
-        await client.getUrl(Uri.parse('http://localhost:3000/null?key=TEST2'));
-    var response = await request.close();
-    expect(response.statusCode, 200);
-    var body = await response.transform(utf8.decoder).join();
-    expect(body, 'null');
-  });
+    'when getting a Enviroment Variable with "getOrThrow" that not exists, then the service will return null',
+    () async {
+      final client = HttpClient();
+      var request = await client.getUrl(
+        Uri.parse('http://localhost:3000/null?key=TEST2'),
+      );
+      var response = await request.close();
+      expect(response.statusCode, 200);
+      var body = await response.transform(utf8.decoder).join();
+      expect(body, 'null');
+    },
+  );
 
   tearDownAll(() async {
     await app?.close();

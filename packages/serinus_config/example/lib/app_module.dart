@@ -7,11 +7,11 @@ import 'app_provider.dart';
 class AppModule extends Module {
   AppModule()
       : super(
-          imports: [ConfigModule(
-            sources: [
+          imports: [
+            ConfigModule(sources: [
               EnvFile('.env'),
-            ]
-          )],
+            ])
+          ],
           controllers: [AppController()],
           providers: [
             Provider.composed<AppProvider>(
