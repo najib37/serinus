@@ -180,7 +180,24 @@ import 'package:serinus_config/serinus_config.dart';
 class AppModule extends Module {
   AppModule() : super(
     imports: [
-      ConfigModule()
+      ConfigModule(
+        sources: [
+          EnvFile('.env'),
+          SystemEnv(),
+          JsonFile('config.json'),
+        ],
+        schema: (Map<String, dynamic> config) {
+          final schema = object({
+            'API_URL': string().notEmpty(),
+            'DB_HOST': string().notEmpty(),
+            'DB_PORT': integer(),
+            'DB_USERNAME': string().notEmpty(),
+            'DB_PASSWORD': string().notEmpty(),
+          }).passthrough();
+          final result = schema.parse(config);
+          return result.value;
+        },
+      )
     ],
   );
 }
@@ -195,6 +212,8 @@ import 'package:serinus_schedule/serinus_schedule.dart';
 
 class AppProvider extends Provider with OnApplicationBootstrap {
   final ScheduleRegistry registry;
+
+  AppProvider(this.registry);
 
   @override
   Future<void> onApplicationBootstrap() async {
