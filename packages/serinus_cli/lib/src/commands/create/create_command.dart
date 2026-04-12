@@ -26,9 +26,10 @@ class CreateCommand extends Command<int> {
         help: 'The project name for this new project. '
             'This must be a valid dart package name.',
       )
-      ..addFlag(
-        'plugin',
-        help: 'Whether to create a plugin project.',
+      ..addOption(
+        'template',
+        help: 'The template to use for creating the project.',
+        allowed: ['base_application', 'base_plugin', 'saas'],
       )
       ..addFlag(
         'force',
@@ -61,12 +62,69 @@ class CreateCommand extends Command<int> {
   Future<int> run() async {
     final outputDirectory = _outputDirectory;
     final projectName = _projectName;
-    if (_isPlugin) {
+    if (_template == 'base_plugin') {
       await _createPlugin(outputDirectory, projectName);
+    } else if (_template == 'saas'){
+      await _createSaas(outputDirectory, projectName);
     } else {
       await _createApplication(outputDirectory, projectName);
     }
     return ExitCode.success.code;
+  }
+
+  Future<void> _createSaas(
+    Directory outputDirectory,
+    String projectName,
+  ) async {
+    final brick = Brick.git(
+      const GitPath(
+        'https://github.com/francescovallone/serinus-bricks',
+        path: 'bricks/saas',
+      ),
+    );
+    final generator = await MasonGenerator.fromBrick(brick);
+    final progress = _logger?.progress(
+      'Generating a new Serinus SaaS Application [$projectName]',
+    );
+    final vars = <String, dynamic>{
+      'name': projectName,
+      'output': outputDirectory.absolute.path,
+      'description': _logger?.prompt(
+        'Description: ',
+        defaultValue: 'A new Serinus SaaS application',
+      ),
+    };
+    if (outputDirectory.existsSync() && !force) {
+      progress?.fail(
+          'Directory already exists at ${outputDirectory.absolute.path}',);
+      return;
+    }
+    if (!outputDirectory.existsSync()) {
+      outputDirectory.createSync(recursive: true);
+    }
+    _logger?.success('Directory created at ${outputDirectory.absolute.path}');
+    progress?.update('Fetching latest version of serinus package...');
+    try {
+      vars['serinus_version'] = await getSerinusVersion();
+    } catch (e) {
+      _logger?.err(
+        '''Failed to fetch latest version of serinus package, you will need to update it manually''',
+      );
+      rethrow;
+    }
+    _logger?.success('\nPre-gen hooks executed successfully');
+    progress?.update('Generating files...');
+    await generator.generate(
+      DirectoryGeneratorTarget(outputDirectory),
+      vars: vars,
+    );
+    _logger?.success('\nFiles generated successfully');
+    progress?.complete('Project generated successfully!');
+    _logger?.info('\nRun the following commands to get started:\n\n'
+      '- cd ${outputDirectory.absolute.path}\n'
+      '- dart pub get\n'
+      '- serinus run\n'
+    );
   }
 
   Future<void> _createPlugin(
@@ -122,11 +180,13 @@ class CreateCommand extends Command<int> {
       DirectoryGeneratorTarget(outputDirectory),
       vars: vars,
     );
-    _logger?.success('Files generated successfully');
-    progress?.complete();
-    _logger?.info('Run the following commands to get started:\n\n'
-        '- cd ${outputDirectory.absolute.path}\n'
-        '- dart pub get\n');
+    _logger?.success('\nFiles generated successfully');
+    progress?.complete('Project generated successfully!');
+    _logger?.info('\nRun the following commands to get started:\n\n'
+      '- cd ${outputDirectory.absolute.path}\n'
+      '- dart pub get\n'
+      '- serinus run\n'
+    );
   }
 
   Future<void> _createApplication(
@@ -153,7 +213,7 @@ class CreateCommand extends Command<int> {
     };
     if (outputDirectory.existsSync() && !force) {
       progress?.fail(
-          'Directory already exists at ${outputDirectory.absolute.path}');
+          'Directory already exists at ${outputDirectory.absolute.path}',);
       return;
     }
     if (!outputDirectory.existsSync()) {
@@ -175,15 +235,7 @@ class CreateCommand extends Command<int> {
       DirectoryGeneratorTarget(outputDirectory),
       vars: vars,
     );
-    _logger?.success('Files generated successfully');
-    // progress?.update('Executing post-gen hooks...');
-    // await generator.hooks.postGen(
-    //   workingDirectory: outputDirectory.absolute.path,
-    //   vars: vars,
-    //   logger: _logger
-    // );
-    // _logger?.success('Post-gen hooks executed successfully');
-    progress?.complete();
+    progress?.complete('Project generated successfully!');
 
     _logger?.info(
       'Run the following commands to get started:\n\n'
@@ -208,7 +260,8 @@ class CreateCommand extends Command<int> {
 
   bool get force => argResults['force'] as bool;
 
-  bool get _isPlugin => argResults['plugin'] as bool;
+  String get _template => argResults['template'] as String? 
+    ?? 'base_application';
 
   void _validateOutputDirectoryArg(List<String> args) {
     if (args.isEmpty) {

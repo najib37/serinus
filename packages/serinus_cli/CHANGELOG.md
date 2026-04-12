@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.3
+
+- feat: add `--template` option to the `create` command to allow users to specify a custom template for project generation. The option accepts a path to a local directory containing the template or a URL to a remote repository. If the option is not provided, the CLI will use the default template included in the package. This changes the previous --plugin option, which is now removed.
+
 ## 2.1.2
 
 - feat(#230): add `extra_paths` configuration option to the `models` command to specify additional directories that should be included in the model generation process.
