@@ -1,16 +1,10 @@
 # Introduction
 
-Serinus is a framework for building robust and scalable [Dart](https://dart.dev) server-side applications. It leverges the power of OOP and the flexibility of [Dart](https://dart.dev) to provide a simple and efficient way to build server-side applications.
+Serinus is purpose-built for Flutter and Dart developers who want to write their backend in the exact same language they use for their frontend. If you are looking to unify your tech stack, seamlessly share data models across environments, and build robust server-side applications without the cognitive load of context-switching, this framework is for you.
 
-Built on the bare HttpServer of Dart, Serinus provides a set of tools and utilities to make the development of server-side applications easier and more efficient. And even if the framework is not a wrapper around shelf, it provides a way to use shelf middlewares and handlers allowing the developer to leverage on already existing shelf packages.
+When it comes to your backend, reliability is everything. Serinus is designed from the ground up for production deployments and stability. Built directly on Dart's bare HttpServer for maximum performance, it still securely provides a way to use existing shelf middlewares and handlers, allowing you to leverage battle-tested community packages without compromise.
 
-## Motivation
-
-At first, Serinus was created to learn more about the Dart language and to understand the internals of a web framework. But as the project grew, the goal of the project has changed.
-
-The current state of the Dart ecosystem is not the best for building server-side applications. The frameworks are there but they are not as mature as other languages like NodeJS or Python. So, the goal of Serinus is to provide a modern and efficient framework for building server-side applications in Dart that can compete with other languages.
-
-Together with the other packages of [Avesbox](https://avesbox.com), Serinus aims to provide a complete ecosystem for building web applications in Dart.
+Furthermore, Serinus isn't just a standalone tool, it is backed by the Avesbox ecosystem, which aims to provide a complete, mature environment for building web applications in Dart.
 
 ## Installation
 

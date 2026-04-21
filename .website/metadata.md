@@ -1,12 +1,6 @@
-<script setup>
-  import MetadataImage from './components/metadata.vue'
-</script>
-
 # Metadata
 
 Metadata are used to add information to a class, a method, a property, or a parameter. In other programming languages they are easily accessible thanks to reflaction. But since they are really useful, Serinus provides his own way to add metadata to your routes and controllers.
-
-<MetadataImage />
 
 ::: info
 Dart does not support reflection, so Serinus provides a more static way to add metadata to your classes.

@@ -1,12 +1,6 @@
-<script setup>
-  import HooksImage from './components/hooks.vue'
-</script>
-
 # Hooks
 
 We have already seen how to add some "hooks" to the application using the Route Lifecycle Hooks, but Serinus also provides a way to create custom hooks that can be used to execute code at specific points in the request lifecycle.
-
-<HooksImage />
 
 These hooks are similar to middlewares, but way more powerful. They can be used to execute code before and after the request is handled, but also before the request is received and after the response is sent.
 This can be useful to authenticate users, log requests, and responses, and more.

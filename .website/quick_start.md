@@ -1,51 +1,58 @@
 # Quick Start
 
-In this guide and in the following guides, you will learn the fundamentals of Serinus. To get familiar with the framework, we will create a simple CRUD application that will allow us to manage a list of users.
+In this guide you'll go from zero to a running Serinus application, then extend it with typed request bodies and validation. By the end you'll have a working Todo API and a clear picture of how the framework fits together.
 
-## Pre-requisites
+## Prerequisites
 
-Before we start, make sure you have Dart (version >= 3.9.0) installed on your machine. If you don't have Dart installed, you can follow the instructions [here](https://dart.dev/get-dart).
+Make sure you have Dart **3.9.0 or higher** installed. If not, follow the [official instructions](https://dart.dev/get-dart).
 
-## Setup
+## Scaffold the project
 
-To scaffold the project with the Serinus CLI, run the following command. This command will create a new Dart project with the Serinus package already added to the `pubspec.yaml` file and the necessary files to get started.
+Install the Serinus CLI and create a new project:
 
 ```bash
 dart pub global activate serinus_cli
 serinus create my_project
+cd my_project
+dart pub get
 ```
 
-This command will create the my_project folder with the following structure:
+This creates the following structure:
 
-```bash
-
+```
 my_project
 ├── bin
-│   ├── my_project.dart
+│   └── my_project.dart       # Entry point
 ├── lib
-│   ├── app_controller.dart
-│   ├── app_module.dart
-│   ├── app_provider.dart
-│   ├── todo.dart
-│   ├── my_project.dart
-├── pubspec.yaml
-
+│   ├── app_controller.dart   # Route handlers
+│   ├── app_module.dart       # Module wiring
+│   ├── app_provider.dart     # Business logic
+│   ├── todo.dart             # Todo model
+│   └── my_project.dart       # App bootstrap
+└── pubspec.yaml
 ```
 
-Here is a brief explanation of the files and folders created:
+## Run the application
 
-| File/Folder | Description |
-| --- | --- |
-| `bin/my_project.dart` | The entry point of the application. |
-| `lib/app_controller.dart` | The controller that will handle the requests. It contains the basics GET, POST, PUT, DELETE routes |
-| `lib/app_module.dart` | The module that will contain the controllers and providers of the application. |
-| `lib/app_provider.dart` | The provider that will handle the business logic of the application. |
-| `lib/todo.dart` | The model that represents a Todo item. |
-| `lib/my_project.dart` | The main file that will create the application and start the server. |
+```bash
+serinus run --dev
+```
 
-The `lib/my_project.dart` file contains the following code:
+Your server is now running at `http://localhost:3000`. The `--dev` flag enables hot restart which reloads the server automatically whenever you save a file.
 
-```dart[my_project.dart]
+Try it:
+
+```bash
+curl http://localhost:3000
+```
+
+That's Serinus running. Now let's look at how the pieces connect.
+
+## How it's structured
+
+Open `lib/my_project.dart`:
+
+```dart
 import 'package:serinus/serinus.dart';
 
 Future<void> bootstrap() async {
@@ -56,209 +63,183 @@ Future<void> bootstrap() async {
 }
 ```
 
-To create a Serinus Application instance, we use the `serinus` global object to call the `createApplication` method. The `createApplication` method takes an `entrypoint` parameter that is an instance of a `Module` class. In this case, we are passing an instance of the `AppModule` class.
+Every Serinus application starts with a root **Module**. Modules group related controllers and providers together, similar to how NestJS or Angular organise code. The `AppModule` you see here is the entry point of that tree.
 
-## Solve your agent skill issues
-
-Serinus is designed to be used with agents and the skills that they use. You can get all the skills using the following commands.
-
-First of all let's activate globally the `skills` package.
-
-```bash
-dart pub global activate serinus_skills
-```
-
-Then we can get the skills with the following command.
-
-```bash
-skills get
-```
-
-If you need to get only Serinus skills then you can use the following command.
-
-```bash
-skills get serinus
-```
-
-## Running the Application
-
-You can now navigate to the project folder and run the following command to start the server.
-
-```bash
-dart pub get
-serinus run --dev
-```
-
-This will start the server on `http://localhost:3000` in development mode allowing you to leverage on an hot-restarter to automatically restart the server when a file is changed.
-
-## Let's complete it
-
-So now we have the application running but we should start adding some features to see how things really work.
-
-## Update the Todo model
-
-The `Todo` class is already augmented with the `JsonObject` mixin, meaning that this object can be converted to its json representation by the framework. But we also need to create it directly from the body although not the `Todo` class itself so let's create a `TodoDto` class.
+Open `lib/app_controller.dart` and you'll see routes defined with `on()`:
 
 ```dart
-class Todo with JsonObject{
+class AppController extends Controller {
+  AppController() : super('/') {
+    on(Route.get('/'), _handleRequest);
+  }
+
+  Future<String> _handleRequest(RequestContext context) async {
+    return 'Hello, World!';
+  }
+}
+```
+
+Controllers declare a **path prefix** in their constructor (`'/'` here), then register individual routes with `on()`. The return value of the handler is automatically serialised and sent as the response.
+
+## Add typed request bodies
+
+Now let's build something real. We'll add a `POST /` route that creates a Todo from a request body with full type safety and validation.
+
+### Step 1 - Define your models
+
+Open `lib/todo.dart` and update it with both a `Todo` response model and a `TodoDto` input model:
+
+```dart
+class Todo with JsonObject {
   final String title;
   bool isDone;
 
-  Todo({
-    required this.title,
-    this.isDone = false,
-  });
+  Todo({required this.title, this.isDone = false});
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      'title': title,
-      'isDone': isDone,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'title': title,
+    'isDone': isDone,
+  };
 }
 
 class TodoDto {
-
   final String title;
 
-  const TodoDto({ 
-    required this.title, 
-  });
+  const TodoDto({required this.title});
 
-  factory TodoDto.fromJson(Map<String, dynamic> json) { 
-    return TodoDto( 
-      title: json['title'], 
-    );
-  } 
+  factory TodoDto.fromJson(Map<String, dynamic> json) {
+    return TodoDto(title: json['title']);
+  }
 }
-
 ```
 
-## Generate the models
+`Todo` uses the `JsonObject` mixin so Serinus knows how to serialise it into a response. `TodoDto` has a `fromJson` factory so Serinus knows how to deserialise incoming request bodies into it.
 
-As you can see the `TodoDto` class has a `fromJson` factory constructor that will be used by the cli to generate the [ModelProvider](/techniques/model_provider.html). So let's do exactly that.
+### Step 2 - Generate the ModelProvider
 
-Let's execute this command:
+Serinus uses a `ModelProvider` to wire up serialisation. The CLI generates it for you:
 
 ```bash
 serinus generate models
 ```
 
-And now we have a new file `model_provider` in the root of the `lib` folder.
+This creates `lib/model_provider.dart`:
 
 ```dart
 import 'package:serinus/serinus.dart';
-
 import 'todo.dart';
 
-/// The [MyProjectModelProvider] is used to provide models for the Serinus application.
-/// It contains mappings for serializing and deserializing models to and from JSON.
 class MyProjectModelProvider extends ModelProvider {
   @override
-  Map<String, Function> get toJsonModels {
-    return {"Todo": (model) => (model as Todo).toJson()};
-  }
+  Map<String, Function> get toJsonModels => {
+    'Todo': (model) => (model as Todo).toJson(),
+  };
 
   @override
-  Map<String, Function> get fromJsonModels {
-    return {"TodoDto": (json) => TodoDto.fromJson(json)};
-  }
+  Map<String, Function> get fromJsonModels => {
+    'TodoDto': (json) => TodoDto.fromJson(json),
+  };
 }
 ```
 
-Let's add it to the application.
+Register it in `lib/my_project.dart`:
 
 ```dart
 import 'package:serinus/serinus.dart';
-
 import 'app_module.dart';
 import 'model_provider.dart';
 
-/// The bootstrap function is the entry point of the application.
-/// It will be called by the `entrypoint` file in the bin directory.
-/// 
-/// This function creates a Serinus application using the [AppModule]
-/// as the root module, and starts the server on host '0.0.0.0' and port 3000.
 Future<void> bootstrap() async {
   final app = await serinus.createApplication(
     entrypoint: AppModule(),
     host: '0.0.0.0',
     port: 3000,
-    modelProvider: MyProjectModelProvider()
+    modelProvider: MyProjectModelProvider(),
   );
   await app.serve();
 }
 ```
 
-## Use the model as the body in the TodoController
+### Step 3 - Add a validation Pipe
 
-First of all let's create a Pipe to validate the body.
+Pipes run before your handler and can validate or transform incoming data. Create `lib/todo_pipe.dart`:
 
 ```dart
 import 'package:serinus/serinus.dart';
-
 import 'todo.dart';
 
 class TodoPipe extends Pipe {
   @override
   Future<void> transform(ExecutionContext context) async {
-    if (context.argumentsHost is! HttpArgumentsHost) {
-      return;
-    }
-    final reqContext = context.switchToHttp();
-    final body = reqContext.body;
+    if (context.argumentsHost is! HttpArgumentsHost) return;
+
+    final body = context.switchToHttp().body;
+
     if (body is TodoDto) {
       if (body.title.isEmpty) {
         throw BadRequestException('Title cannot be empty');
       }
       return;
     }
-    throw BadRequestException('The body is not correct!');
+
+    throw BadRequestException('Invalid request body');
   }
 }
 ```
 
-Then let's bind the pipe to the controller and specify the DTO to the route that will create the `Todo`.
+### Step 4 - Wire it into the controller
+
+Update `lib/app_controller.dart` to add the typed POST route:
 
 ```dart
 import 'package:serinus/serinus.dart';
-
 import 'app_provider.dart';
 import 'todo.dart';
 import 'todo_pipe.dart';
 
 class AppController extends Controller {
+  AppController() : super('/') {
+    on(Route.get('/'), _getTodos);
 
-  AppController(): super('/'){
-    /// ...
     on<Todo, TodoDto>(
-      Route.post(
-        '/',
-        pipes: {
-          TodoPipe()
-        }
-      ), 
-      _createTodo
+      Route.post('/', pipes: {TodoPipe()}),
+      _createTodo,
     );
-    /// ...
   }
 
-///...
+  Future<List<Todo>> _getTodos(RequestContext context) async {
+    return context.use<AppProvider>().todos;
+  }
 
   Future<Todo> _createTodo(RequestContext<TodoDto> context) async {
     context.use<AppProvider>().addTodo(context.body.title);
     return context.use<AppProvider>().todos.last;
   }
-
-///...
-
-
 }
 ```
 
-Now when you do a `POST` request to `/` everything will be safe and sound.
+Notice `on<Todo, TodoDto>`, the two type parameters tell Serinus that this route expects a `TodoDto` body and returns a `Todo`. Inside `_createTodo`, `context.body` is already typed as `TodoDto`. No casting, no `Map<String, dynamic>` fishing.
 
-## Conclusion
+### Try it
 
-We've created a REST Api that automatically convert and validates the body of a request without code generation and **magic** stuff like that.
+```bash
+# Create a todo
+curl -X POST http://localhost:3000 \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Buy milk"}'
+
+# Get all todos
+curl http://localhost:3000
+```
+
+## What you've learned
+
+In this guide you've seen the four building blocks of every Serinus application:
+
+- **Modules**: organise your application into cohesive slices
+- **Controllers**: define routes and handle requests
+- **Providers**: hold business logic, injected via `context.use<T>()`
+- **Pipes**: validate or transform data before it reaches a handler
+
+From here, explore the [Controllers](/controllers) and [Pipes](/pipes) docs to go deeper, or jump straight to [Authentication](/security/authentication) if you're building something that needs protected routes.
